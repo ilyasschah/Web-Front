@@ -1,5 +1,4 @@
 import React from "react";
-import { X } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FormField {
   name: string;
@@ -28,25 +34,29 @@ interface FormField {
   type: string;
   placeholder?: string;
   required?: boolean;
-  options?: { value: string | number; label: string }[]; // <--- ADD THIS LINE
+  options?: { value: string | number; label: string }[];
 }
 
 interface FormModalProps {
   title: string;
   fields: FormField[];
   onSubmit: (data: any) => void;
-  onCancel: () => void;
+  onClose: () => void;
   open?: boolean;
   initialData?: Record<string, any>;
   error?: string;
+  isOpen?: boolean;
+  onCancel?: () => void;
 }
 
 const FormModal = ({
   title = "Add Item",
   fields = [],
   onSubmit = () => {},
+  onClose = () => {},
   onCancel = () => {},
   open = true,
+  isOpen = true,
   initialData = {},
   error = "",
 }: FormModalProps) => {
@@ -95,19 +105,16 @@ const FormModal = ({
     onSubmit(data);
   };
 
+  const handleClose = () => {
+    onClose();
+    if (onCancel) onCancel();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+    <Dialog open={open || isOpen} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[500px] bg-background">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={onCancel}
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <Form {...form}>
@@ -125,18 +132,22 @@ const FormModal = ({
                     <FormLabel>{field.label}</FormLabel>
                     <FormControl>
                       {field.type === "select" ? (
-                        <select
-                          {...formField}
-                          className="w-full border rounded h-10 px-2 bg-background"
+                        <Select
+                          onValueChange={formField.onChange}
+                          defaultValue={formField.value}
                         >
-                          <option value="">Select a {field.label}</option>
-                          {field.options &&
-                            field.options.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                        </select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={`Select a ${field.label.toLowerCase()}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options &&
+                              field.options.map((opt) => (
+                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
                       ) : (
                         <Input
                           {...formField}
@@ -153,11 +164,13 @@ const FormModal = ({
 
             {/* Show backend error here if exists */}
             {error && (
-              <div className="text-red-600 text-sm mb-2 text-center">{error}</div>
+              <div className="text-red-600 text-sm mb-2 text-center p-3 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
             )}
 
             <DialogFooter className="pt-4">
-              <Button variant="outline" type="button" onClick={onCancel}>
+              <Button variant="outline" type="button" onClick={handleClose}>
                 Cancel
               </Button>
               <Button type="submit">Save</Button>
@@ -168,5 +181,6 @@ const FormModal = ({
     </Dialog>
   );
 };
+
 export default FormModal;
 export type { FormField, FormModalProps };
