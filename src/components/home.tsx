@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, ShoppingCart, Users } from "lucide-react";
 import DataTable from "./tables/DataTable";
 import FormModal from "./modals/FormModal";
 
@@ -185,31 +184,25 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <div className="w-64 bg-card border-r border-border p-4">
-        <div className="flex items-center justify-center mb-8">
-          <ShoppingCart className="h-8 w-8 text-primary mr-2" />
-          <h1 className="text-xl font-bold">POS Dashboard</h1>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border bg-card">
+        <div className="flex items-center justify-between p-6">
+          <h1 className="text-2xl font-bold text-primary">POS Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+              <span className="text-sm font-medium">US</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium">User Store</p>
+              <p className="text-xs text-muted-foreground">Admin</p>
+            </div>
+          </div>
         </div>
-        <nav className="space-y-2">
-          <button onClick={() => setActiveTab("products")} className={`flex items-center w-full p-3 rounded-md transition-colors ${activeTab === "products" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
-            <BarChart3 className="h-5 w-5 mr-3" />
-            Products
-          </button>
-          <button onClick={() => setActiveTab("customers")} className={`flex items-center w-full p-3 rounded-md transition-colors ${activeTab === "customers" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
-            <Users className="h-5 w-5 mr-3" />
-            Customers
-          </button>
-          <button onClick={() => setActiveTab("orders")} className={`flex items-center w-full p-3 rounded-md transition-colors ${activeTab === "orders" ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>
-            <ShoppingCart className="h-5 w-5 mr-3" />
-            Orders
-          </button>
-        </nav>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex justify-between items-center mb-6">
             <TabsList>
