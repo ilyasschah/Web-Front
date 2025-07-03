@@ -12,10 +12,23 @@ import FormModal from "./modals/FormModal";
 
 // Mock Data
 const mockCustomers = [
-  { id: 1, name: "John Doe", email: "john@example.com", phone: "555-1234", joinDate: "2023-01-15" },
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "555-1234",
+    joinDate: "2023-01-15",
+  },
 ];
 const mockOrders = [
-  { id: 1, product: "Coffee Mug", customer: "John Doe", quantity: 2, date: "2023-06-01", status: "Completed" },
+  {
+    id: 1,
+    product: "Coffee Mug",
+    customer: "John Doe",
+    quantity: 2,
+    date: "2023-06-01",
+    status: "Completed",
+  },
 ];
 
 // Table columns
@@ -90,9 +103,9 @@ const Dashboard = () => {
   }, []);
   useEffect(() => {
     fetch("http://localhost:5000/Inventory")
-      .then(res => res.json())
-      .then(data => setInventories(data))
-      .catch(err => {
+      .then((res) => res.json())
+      .then((data) => setInventories(data))
+      .catch((err) => {
         console.error("Failed to fetch inventory", err);
         setInventories([]);
       });
@@ -107,7 +120,8 @@ const Dashboard = () => {
           const enriched = productData.map((p) => ({
             ...p,
             stock: inventoryData.find((i) => i.productId === p.id)?.stock ?? 0,
-            category: categories.find((c) => c.id === p.categoryId)?.name || "N/A",
+            category:
+              categories.find((c) => c.id === p.categoryId)?.name || "N/A",
           }));
           setProducts(enriched);
         })
@@ -166,7 +180,9 @@ const Dashboard = () => {
           }
         })
         .then((newProduct) => {
-          const category = categories.find((c) => c.id === newProduct.categoryId);
+          const category = categories.find(
+            (c) => c.id === newProduct.categoryId,
+          );
           setProducts((prev) => [
             ...prev,
             {
@@ -188,7 +204,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="border-b border-border bg-card">
         <div className="flex items-center justify-between p-6">
-          <h1 className="text-2xl font-bold text-primary">POS Dashboard</h1>
+          <h3 className="text-2xl font-bold text-primary">POS Dashboard</h3>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
               <span className="text-sm font-medium">US</span>
@@ -200,7 +216,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
       {/* Main content */}
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -215,32 +230,49 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Products Management</CardTitle>
-                <CardDescription>Manage your product inventory, prices, and stock levels.</CardDescription>
+                <CardDescription>
+                  Manage your product inventory, prices, and stock levels.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <DataTable columns={productColumns} data={products} onAddNew={() => handleOpenModal("product")} />
+                <DataTable
+                  columns={productColumns}
+                  data={products}
+                  onAddNew={() => handleOpenModal("product")}
+                />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="customers">
             <Card>
-              <CardHeader><CardTitle>Customer Management</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Customer Management</CardTitle>
+              </CardHeader>
               <CardContent>
-                <DataTable columns={customerColumns} data={mockCustomers} onAddNew={() => handleOpenModal("customer")} />
+                <DataTable
+                  columns={customerColumns}
+                  data={mockCustomers}
+                  onAddNew={() => handleOpenModal("customer")}
+                />
               </CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="orders">
             <Card>
-              <CardHeader><CardTitle>Order Management</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Order Management</CardTitle>
+              </CardHeader>
               <CardContent>
-                <DataTable columns={orderColumns} data={mockOrders} onAddNew={() => handleOpenModal("order")} />
+                <DataTable
+                  columns={orderColumns}
+                  data={mockOrders}
+                  onAddNew={() => handleOpenModal("order")}
+                />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-
       {/* Modal */}
       {isModalOpen && (
         <FormModal
