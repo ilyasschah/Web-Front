@@ -1,5 +1,4 @@
 import React from "react";
-import { X } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -116,14 +115,6 @@ const FormModal = ({
       <DialogContent className="sm:max-w-[500px] bg-background">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={handleClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <Form {...form}>
