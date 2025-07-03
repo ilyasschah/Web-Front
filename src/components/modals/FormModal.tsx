@@ -168,6 +168,5 @@ const FormModal = ({
     </Dialog>
   );
 };
-
 export default FormModal;
 export type { FormField, FormModalProps };
