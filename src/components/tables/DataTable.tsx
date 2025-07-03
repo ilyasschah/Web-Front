@@ -168,7 +168,7 @@ const DataTable = ({
                 >
                   {columns.map((column) => (
                     <TableCell key={`${row.id ?? index}-${column.accessorKey}`}>
-                        {row[column.accessorKey]}
+                      {row[column.accessorKey]}
                     </TableCell>
                   ))}
                 </TableRow>

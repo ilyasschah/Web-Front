@@ -101,6 +101,13 @@ const FormModal = ({
     defaultValues: initialData || {},
   });
 
+  // Reset form when initialData changes
+  React.useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      form.reset(initialData);
+    }
+  }, [initialData, form]);
+
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     onSubmit(data);
   };
@@ -111,7 +118,10 @@ const FormModal = ({
   };
 
   return (
-    <Dialog open={open || isOpen} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+    <Dialog
+      open={open || isOpen}
+      onOpenChange={(isOpen) => !isOpen && handleClose()}
+    >
       <DialogContent className="sm:max-w-[500px] bg-background">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
@@ -137,12 +147,17 @@ const FormModal = ({
                           defaultValue={formField.value}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={`Select a ${field.label.toLowerCase()}`} />
+                            <SelectValue
+                              placeholder={`Select a ${field.label.toLowerCase()}`}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {field.options &&
                               field.options.map((opt) => (
-                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                <SelectItem
+                                  key={opt.value}
+                                  value={String(opt.value)}
+                                >
                                   {opt.label}
                                 </SelectItem>
                               ))}

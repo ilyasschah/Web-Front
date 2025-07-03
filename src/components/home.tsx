@@ -94,6 +94,8 @@ const Dashboard = () => {
   const [categories, setCategories] = useState([]);
   const [inventories, setInventories] = useState([]);
   const [formError, setFormError] = useState(""); // <-- add error state
+  const [selectedProduct, setSelectedProduct] = useState(null); // <-- add selected product state
+  const [isEditMode, setIsEditMode] = useState(false); // <-- add edit mode state
 
   useEffect(() => {
     fetch("http://localhost:5000/Category")
@@ -151,49 +153,116 @@ const Dashboard = () => {
   const handleOpenModal = (type) => {
     setFormError(""); // reset error on open
     setModalType(type);
+    setIsEditMode(false);
+    setSelectedProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleProductClick = (product) => {
+    setFormError(""); // reset error on open
+    setSelectedProduct(product);
+    setModalType("product");
+    setIsEditMode(true);
     setIsModalOpen(true);
   };
 
   const handleFormSubmit = (data) => {
     if (modalType === "product") {
       setFormError(""); // reset before submit
-      fetch("http://localhost:5000/Product", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          price: parseFloat(data.price),
-          stock: parseInt(data.stock),
-          categoryId: parseInt(data.categoryId),
-        }),
-      })
-        .then(async (res) => {
-          if (res.ok) {
-            return res.json();
-          } else if (res.status === 409) {
-            // Duplicate product
-            const err = await res.json();
-            throw new Error(err.error || "Duplicate product");
-          } else {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || "Failed to create product");
-          }
+
+      if (isEditMode && selectedProduct) {
+        // Update existing product
+        fetch(`http://localhost:5000/Product/${selectedProduct.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            price: parseFloat(data.price),
+            categoryId: parseInt(data.categoryId),
+          }),
         })
-        .then((newProduct) => {
-          const category = categories.find(
-            (c) => c.id === newProduct.categoryId,
-          );
-          setProducts((prev) => [
-            ...prev,
-            {
-              ...newProduct,
-              stock: newProduct.stock ?? 0,
-              category: category?.name || "N/A",
-            },
-          ]);
-          setIsModalOpen(false);
+          .then(async (res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || "Failed to update product");
+            }
+          })
+          .then((updatedProduct) => {
+            // Update inventory separately
+            return fetch(
+              `http://localhost:5000/Inventory/${selectedProduct.id}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  productId: selectedProduct.id,
+                  stock: parseInt(data.stock),
+                }),
+              },
+            ).then(() => updatedProduct);
+          })
+          .then((updatedProduct) => {
+            const category = categories.find(
+              (c) => c.id === updatedProduct.categoryId,
+            );
+            setProducts((prev) =>
+              prev.map((p) =>
+                p.id === updatedProduct.id
+                  ? {
+                      ...updatedProduct,
+                      stock: parseInt(data.stock),
+                      category: category?.name || "N/A",
+                    }
+                  : p,
+              ),
+            );
+            setIsModalOpen(false);
+            setSelectedProduct(null);
+            setIsEditMode(false);
+          })
+          .catch((err) => setFormError(err.message));
+      } else {
+        // Create new product
+        fetch("http://localhost:5000/Product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            price: parseFloat(data.price),
+            stock: parseInt(data.stock),
+            categoryId: parseInt(data.categoryId),
+          }),
         })
-        .catch((err) => setFormError(err.message));
+          .then(async (res) => {
+            if (res.ok) {
+              return res.json();
+            } else if (res.status === 409) {
+              // Duplicate product
+              const err = await res.json();
+              throw new Error(err.error || "Duplicate product");
+            } else {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error || "Failed to create product");
+            }
+          })
+          .then((newProduct) => {
+            const category = categories.find(
+              (c) => c.id === newProduct.categoryId,
+            );
+            setProducts((prev) => [
+              ...prev,
+              {
+                ...newProduct,
+                stock: newProduct.stock ?? 0,
+                category: category?.name || "N/A",
+              },
+            ]);
+            setIsModalOpen(false);
+          })
+          .catch((err) => setFormError(err.message));
+      }
     } else {
       setIsModalOpen(false);
     }
@@ -239,6 +308,7 @@ const Dashboard = () => {
                   columns={productColumns}
                   data={products}
                   onAddNew={() => handleOpenModal("product")}
+                  onRowClick={handleProductClick}
                 />
               </CardContent>
             </Card>
@@ -277,9 +347,13 @@ const Dashboard = () => {
       {isModalOpen && (
         <FormModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedProduct(null);
+            setIsEditMode(false);
+          }}
           onSubmit={handleFormSubmit}
-          title={`Add New ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}
+          title={`${isEditMode ? "Edit" : "Add New"} ${modalType.charAt(0).toUpperCase() + modalType.slice(1)}`}
           fields={
             modalType === "product"
               ? productFields
@@ -287,6 +361,7 @@ const Dashboard = () => {
                 ? customerFields
                 : orderFields
           }
+          initialData={isEditMode && selectedProduct ? selectedProduct : {}}
           error={formError} // pass error to modal
         />
       )}
